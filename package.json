@@ -12,8 +12,14 @@
     "typecheck": "nuxt typecheck"
   },
   "dependencies": {
+    "@iconify-json/heroicons": "^1.2.3",
     "@iconify-json/lucide": "^1.2.112",
+    "@iconify-json/material-symbols": "^1.2.86",
+    "@iconify-json/mdi": "^1.2.3",
+    "@iconify-json/ph": "^1.2.2",
     "@iconify-json/simple-icons": "^1.2.86",
+    "@iconify-json/solar": "^1.2.5",
+    "@iconify-json/tabler": "^1.2.37",
     "@internationalized/date": "^3.12.2",
     "@nuxt/ui": "^4.8.2",
     "@pinia/nuxt": "0.11.3",
@@ -32,12 +38,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@iconify-json/heroicons": "^1.2.3",
-    "@iconify-json/material-symbols": "^1.2.86",
-    "@iconify-json/mdi": "^1.2.3",
-    "@iconify-json/ph": "^1.2.2",
-    "@iconify-json/solar": "^1.2.5",
-    "@iconify-json/tabler": "^1.2.37",
     "@nuxt/eslint": "^1.16.0",
     "eslint": "^10.5.0",
     "typescript": "^6.0.3",
