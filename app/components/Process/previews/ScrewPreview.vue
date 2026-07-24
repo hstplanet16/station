@@ -195,14 +195,14 @@ watch(plcData, (value: any) => {
   // Plc_Islemi_Bitti bayrağını da gönderir.
   console.log(screwData.NoktaIndex, screwData.ToplamIndex);
 
-  if (screwData.NoktaIndex === screwData.ToplamIndex && !processCompleted.value) {
+ /* if (screwData.NoktaIndex === screwData.ToplamIndex && !processCompleted.value) {
     processCompleted.value = true
     emit('complateProcess', true)
-  }
+  }*/
 }, { deep: true, immediate: true })
 
 // Plc_İşlemi_Bitti bayrağını dinle ve bir sonraki aşamaya geç
-watch(() => plcData.value?.Plc_İşlemi_Bitti, (isFinished) => {
+watch(() => plcData.value?.Plc_Islemi_Bitti, (isFinished) => {
   if (isFinished === true && !processCompleted.value) {
     processCompleted.value = true
     emit('complateProcess', true)
