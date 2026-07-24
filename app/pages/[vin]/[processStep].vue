@@ -11,6 +11,8 @@
           </div>
           <UButton icon="material-symbols:cancel" label="İşlemi Sonlandır" variant="ghost" color="neutral"
             @click="endWork" />
+          <UButton icon="material-symbols:database" label="PLC Data" variant="ghost" color="neutral"
+            @click="isPlcSliderOpen = true" />
         </div>
       </template>
     </UDashboardNavbar>
@@ -32,6 +34,28 @@
 
 
     </div>
+
+    <USlideover v-model:open="isPlcSliderOpen" side="right">
+      <template #body>
+        <div class="p-4">
+        <h3 class="text-lg font-semibold mb-4">PLC Verileri</h3>
+        
+        <div class="mb-6">
+          <h4 class="text-sm font-medium text-gray-500 mb-2">PLC'ye Yazılan Değerler</h4>
+          <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 min-h-[100px]">
+            <pre class="text-xs overflow-auto">{{ writtenPlcValues }}</pre>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-medium text-gray-500 mb-2">PLC'den Okunan Değerler</h4>
+          <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 min-h-[100px]">
+            <pre class="text-xs overflow-auto">{{ plcData || 'Veri bekleniyor...' }}</pre>
+          </div>
+        </div>
+      </div>
+      </template>
+    </USlideover>
   </UDashboardPanel>
 
 </template>
@@ -57,9 +81,22 @@ const station = useStationStore()
 const app = useAppConfig()
 
 const { updateProcessReport } = useReportService()
+const { plcData, writeValue: originalWriteValue, writeMultiple: originalWriteMultiple } = usePLC()
+
+const writeValue = async (variableName: string, value: any) => {
+  writtenPlcValues.value[variableName] = value
+  return originalWriteValue(variableName, value)
+}
+
+const writeMultiple = async (dataObject: any) => {
+  Object.assign(writtenPlcValues.value, dataObject)
+  return originalWriteMultiple(dataObject)
+}
 
 const timmer = ref(0)
 const remainingSeconds = ref(0)
+const isPlcSliderOpen = ref(false)
+const writtenPlcValues = ref<any>({})
 
 const vinData = computed(() => useAppCookie(`vin-data-${route.params.vin}`).value)
 
