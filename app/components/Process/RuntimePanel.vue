@@ -8,7 +8,6 @@ import {
   isGeneralStepData,
   isScrewStepData,
   isServerStepData,
-  processTypeLabel,
   findBarcodeIndexByScan
 } from '~/utils/processData'
 
@@ -50,11 +49,7 @@ const showVinMismatch = computed(() => {
   return !processBarcodes.some(pb => vinBarcodes.value.includes(pb))
 })
 
-const materialNotFoundAction = computed(() => stepData.value.settings?.materialNotFoundAction ?? 'wait')
-const materialNotFoundDelay = computed(() => stepData.value.settings?.materialNotFoundDelay ?? 10)
-
 const timmer = ref(0)
-const remainingSeconds = ref(0)
 const timerColor = computed(() => {
   if (timmer.value <= station.getStation.nominalThreshold) return 'success'
   if (timmer.value < station.getStation.criticalThreshold) return 'warning'
@@ -62,9 +57,6 @@ const timerColor = computed(() => {
 })
 
 let intervalId: ReturnType<typeof setInterval> | null = null
-let advanceTimeoutId: ReturnType<typeof setTimeout> | null = null
-let hasTriggeredAdvance = false
-let countdownIntervalId: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
   intervalId = setInterval(() => { timmer.value++ }, 1000)
@@ -72,61 +64,11 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (intervalId) clearInterval(intervalId)
-  if (advanceTimeoutId) clearTimeout(advanceTimeoutId)
-  if (countdownIntervalId) clearInterval(countdownIntervalId)
-})
-
-watch(showNotFound, (isNotFound) => {
-  if (!isNotFound) {
-    hasTriggeredAdvance = false
-    if (advanceTimeoutId) {
-      clearTimeout(advanceTimeoutId)
-      advanceTimeoutId = null
-    }
-    if (countdownIntervalId) {
-      clearInterval(countdownIntervalId)
-      countdownIntervalId = null
-    }
-    remainingSeconds.value = 0
-    return
-  }
-
-  if (isNotFound && materialNotFoundAction.value !== 'wait' && !hasTriggeredAdvance && !advanceTimeoutId) {
-    const delay = materialNotFoundAction.value === 'showAndAdvance' ? materialNotFoundDelay.value : 0
-
-    remainingSeconds.value = delay
-    if (delay > 0) {
-      countdownIntervalId = setInterval(() => {
-        remainingSeconds.value--
-        if (remainingSeconds.value <= 0) {
-          if (countdownIntervalId) {
-            clearInterval(countdownIntervalId)
-            countdownIntervalId = null
-          }
-        }
-      }, 1000)
-    }
-
-    advanceTimeoutId = setTimeout(() => {
-      hasTriggeredAdvance = true
-      if (countdownIntervalId) {
-        clearInterval(countdownIntervalId)
-        countdownIntervalId = null
-      }
-      try {
-        emit('advance')
-      } catch (error) {
-        console.error('Emit failed:', error)
-      }
-    }, delay * 1000)
-  }
 })
 
 watch(() => props.process.id, () => {
   scanInput.value = ''
   timmer.value = 0
-  hasTriggeredAdvance = false
-  // Timeout'u temizlemiyoruz, çünkü zaten tetiklenmek üzere
 })
 </script>
 
@@ -147,24 +89,27 @@ watch(() => props.process.id, () => {
     <div class="flex min-h-0 flex-1 flex-col overflow-hidden p-4 sm:p-5">
       <ProcessPreviewsBarcodePreview
         v-if="process.processType === 'barcode' && isBarcodeStepData(stepData)"
+        :key="process.id"
         readonly
         :data="stepData"
         :preview-barcode="matchedBarcode"
         :show-not-found="showNotFound"
-        :remaining-seconds="remainingSeconds"
+        @complate-process="emit('advance')"
       />
 
       <ProcessPreviewsScrewPreview
         v-else-if="process.processType === 'screw' && isScrewStepData(stepData)"
+        :key="process.id"
         readonly
         :data="stepData"
         :preview-barcode="matchedBarcode"
         :show-not-found="showNotFound"
-        :remaining-seconds="remainingSeconds"
+        @complate-process="emit('advance')"
       />
 
       <ProcessPreviewsGeneralPreview
         v-else-if="process.processType === 'general' && isGeneralStepData(stepData)"
+        :key="process.id"
         readonly
         :data="stepData"
         @complate-process="emit('advance')"
@@ -172,6 +117,7 @@ watch(() => props.process.id, () => {
 
       <ProcessPreviewsServerPreview
         v-else-if="process.processType === 'server' && isServerStepData(stepData)"
+        :key="process.id"
         readonly
         :data="stepData"
       />

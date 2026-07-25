@@ -20,17 +20,19 @@
 
     <div class="flex min-h-0 flex-1 flex-col overflow-hidden p-4 sm:p-5" v-if="process">
 
-      <ProcessPreviewsBarcodePreview v-if="process.processType === 'barcode' && isBarcodeStepData(stepData)" readonly
+      <ProcessPreviewsBarcodePreview v-if="process.processType === 'barcode' && isBarcodeStepData(stepData)"
+        :key="process.id" readonly
         :data="stepData" :preview-barcode="matchedBarcode" :show-not-found="showNotFound"
-        :remaining-seconds="remainingSeconds" :matched-barcode="matchedVinBarcode"
+        :matched-barcode="matchedVinBarcode"
         @complate-process="advanceToNextProcess" />
 
       <ProcessPreviewsGeneralPreview v-else-if="process.processType === 'general' && isGeneralStepData(stepData)"
-        readonly :data="stepData" @complate-process="advanceToNextProcess" />
+        :key="process.id" readonly :data="stepData" @complate-process="advanceToNextProcess" />
 
-      <ProcessPreviewsScrewPreview v-else-if="process.processType === 'screw' && isScrewStepData(stepData)" readonly
+      <ProcessPreviewsScrewPreview v-else-if="process.processType === 'screw' && isScrewStepData(stepData)"
+        :key="process.id" readonly
         :data="stepData" :preview-barcode="matchedBarcode" :show-not-found="showNotFound"
-        :remaining-seconds="remainingSeconds" @complate-process="advanceToNextProcess" />
+        @complate-process="advanceToNextProcess" />
 
 
     </div>
@@ -94,7 +96,6 @@ const writeMultiple = async (dataObject: any) => {
 }
 
 const timmer = ref(0)
-const remainingSeconds = ref(0)
 const isPlcSliderOpen = ref(false)
 const writtenPlcValues = ref<any>({})
 
@@ -182,9 +183,6 @@ async function advanceToNextProcess() {
 }
 
 let intervalId: ReturnType<typeof setInterval> | null = null
-let advanceTimeoutId: ReturnType<typeof setTimeout> | null = null
-let hasTriggeredAdvance = false
-let countdownIntervalId: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
   intervalId = setInterval(() => {
@@ -197,8 +195,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (intervalId) clearInterval(intervalId)
-  if (advanceTimeoutId) clearTimeout(advanceTimeoutId)
-  if (countdownIntervalId) clearInterval(countdownIntervalId)
 })
 
 </script>

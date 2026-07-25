@@ -48,7 +48,7 @@ function save() {
             <USelect v-model="localSettings.materialNotFoundAction" :items="materialNotFoundActions" class="w-full" />
           </UFormField>
           <UFormField
-            v-if="localSettings.materialNotFoundAction !== 'wait'"
+            v-if="localSettings.materialNotFoundAction === 'showAndAdvance'"
             label="Bekleme Süresi (sn)"
             description="Bu süre sonunda otomatik olarak sonraki adıma geçilir"
           >

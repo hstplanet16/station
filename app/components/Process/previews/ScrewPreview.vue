@@ -18,7 +18,6 @@ const props = defineProps<{
   previewBarcode?: IBarcodeItem | null
   showNotFound?: boolean
   readonly?: boolean
-  remainingSeconds?: number
 }>()
 
 const emit = defineEmits<{
@@ -33,6 +32,19 @@ const emit = defineEmits<{
 const { writeMultiple, writeValue, plcData } = usePLC()
 const { getImage } = useProcessImages()
 const { createReport, updateReport } = useReportService()
+
+const {
+  remainingSeconds,
+  displayNotFound,
+  isOperatorWait,
+  isCountdown,
+  skipNotFound,
+} = useMaterialNotFoundAdvance({
+  showNotFound: () => !!props.showNotFound,
+  settings: () => props.data.settings,
+  readonly: () => props.readonly,
+  onComplete: () => emit('complateProcess', true),
+})
 
 const primaryScrew = computed(() => props.data.screws[0])
 
@@ -232,7 +244,7 @@ watch(() => plcData.value?.Plc_Islemi_Bitti, (isFinished) => {
 </script>
 
 <template>
-  <ProcessPreviewShell :show-not-found="showNotFound">
+  <ProcessPreviewShell :show-not-found="displayNotFound">
     <UPageCTA orientation="horizontal" variant="naked" class="h-full w-full" :ui="processPreviewCtaUi">
       <template #title>
         <ProcessEditableField :model-value="data.title" tag="h1" class="text-4xl font-semibold" :readonly="readonly"
@@ -284,11 +296,14 @@ watch(() => plcData.value?.Plc_Islemi_Bitti, (isFinished) => {
       <UEmpty title="Malzeme Numarası Bulunamadı">
         <template #description>
           <p>{{ data.settings.materialNotFoundMessage }}</p>
-          <p v-if="data.settings.materialNotFoundAction !== 'wait'" class="mt-2">
-            Sizi <span class="font-semibold">{{ remainingSeconds ?? data.settings.materialNotFoundDelay }}</span> sn
+          <p v-if="isCountdown" class="mt-2">
+            Sizi <span class="font-semibold">{{ remainingSeconds }}</span> sn
             içerisinde diğer adıma
             yönlendireceğim.
           </p>
+        </template>
+        <template v-if="isOperatorWait" #actions>
+          <UButton label="Sayfayı geç" color="primary" @click="skipNotFound" />
         </template>
       </UEmpty>
     </template>
