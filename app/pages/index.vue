@@ -72,7 +72,7 @@ const stationData = computed(() => {
     <template #body>
       <HomeStats :period="period" :range="range" />
       <HomeChart :period="period" :range="range" />
-      <HomeSales :period="period" :range="range" />
+      <!-- <HomeSales :period="period" :range="range" /> -->
     </template>
   </UDashboardPanel>
 </template>
