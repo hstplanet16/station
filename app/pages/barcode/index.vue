@@ -125,9 +125,13 @@ async function onSubmit(payload: FormSubmitEvent<{ barcode?: string }>) {
 let unsubscribeBarcode: (() => void) | null = null
 let unsubscribeCardReader: (() => void) | null = null
 
-onMounted(() => {
+onMounted(async () => {
 
-  writeMultiple({ Ana_Bar_Bek: true, Octa_Islemi_Bitti: true })
+  await writeMultiple({ Ana_Bar_Bek: true, Octa_Islemi_Bitti: true })
+  setTimeout(async () => {
+    await writeMultiple({ Ana_Bar_Bek: true, Octa_Islemi_Bitti: true })
+  }, 3000);
+  
   unsubscribeBarcode = (window as any).electronAPI.barcodeStream(async (barcode: string) => {
     onStartVIN(barcode)
   })

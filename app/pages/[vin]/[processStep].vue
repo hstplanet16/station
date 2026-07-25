@@ -12,7 +12,7 @@
           <UButton icon="material-symbols:cancel" label="İşlemi Sonlandır" variant="ghost" color="neutral"
             @click="endWork" />
           <UButton icon="material-symbols:database" label="PLC Data" variant="ghost" color="neutral"
-            @click="isPlcSliderOpen = true" />
+            @click="() => { isPlcSliderOpen = true }" />
         </div>
       </template>
     </UDashboardNavbar>
@@ -30,7 +30,7 @@
 
       <ProcessPreviewsScrewPreview v-else-if="process.processType === 'screw' && isScrewStepData(stepData)" readonly
         :data="stepData" :preview-barcode="matchedBarcode" :show-not-found="showNotFound"
-        :remaining-seconds="remainingSeconds"  @complate-process="advanceToNextProcess" />
+        :remaining-seconds="remainingSeconds" @complate-process="advanceToNextProcess" />
 
 
     </div>
@@ -38,22 +38,22 @@
     <USlideover v-model:open="isPlcSliderOpen" side="right">
       <template #body>
         <div class="p-4">
-        <h3 class="text-lg font-semibold mb-4">PLC Verileri</h3>
-        
-        <div class="mb-6">
-          <h4 class="text-sm font-medium text-gray-500 mb-2">PLC'ye Yazılan Değerler</h4>
-          <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 min-h-[100px]">
-            <pre class="text-xs overflow-auto">{{ writtenPlcValues }}</pre>
-          </div>
-        </div>
+          <h3 class="text-lg font-semibold mb-4">PLC Verileri</h3>
 
-        <div>
-          <h4 class="text-sm font-medium text-gray-500 mb-2">PLC'den Okunan Değerler</h4>
-          <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 min-h-[100px]">
-            <pre class="text-xs overflow-auto">{{ plcData || 'Veri bekleniyor...' }}</pre>
+          <div class="mb-6">
+            <h4 class="text-sm font-medium text-gray-500 mb-2">PLC'ye Yazılan Değerler</h4>
+            <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 min-h-[100px]">
+              <pre class="text-xs overflow-auto">{{ writtenPlcValues }}</pre>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="text-sm font-medium text-gray-500 mb-2">PLC'den Okunan Değerler</h4>
+            <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 min-h-[100px]">
+              <pre class="text-xs overflow-auto">{{ plcData || 'Veri bekleniyor...' }}</pre>
+            </div>
           </div>
         </div>
-      </div>
       </template>
     </USlideover>
   </UDashboardPanel>

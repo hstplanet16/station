@@ -98,13 +98,33 @@ async function startTighteningProcess() {
   }
 
   try {
-    await writeMultiple({
+    console.log("1. Gönderim")
+    await writeValue("Sikici_No", deviceId)
+    await writeValue("Program_No", props.data.programNumber)
+    await writeValue("Sikma_Adedi", props.data.screwPoints.length)
+    await writeValue("Sayfa_No", props.data.programNumber)
+    await writeValue("Islem_No", 2)
+
+    setTimeout(async () => {
+      console.log("Bekleniyor..")
+      console.log("2. Gönderim")
+      await writeValue("Sikici_No", deviceId)
+      await writeValue("Program_No", props.data.programNumber)
+      await writeValue("Sikma_Adedi", props.data.screwPoints.length)
+      await writeValue("Sayfa_No", props.data.programNumber)
+      await writeValue("Islem_No", 2)
+    }, 3000);
+
+
+
+
+    /*await writeMultiple({
       Sikici_No: deviceId,
       Program_No: props.data.programNumber,
       Sikma_Adedi: props.data.screwPoints.length,
       Sayfa_No: props.data.programNumber,
       Islem_No: 2,
-    })
+    })*/
   } catch (err) {
     console.error('PLC başlatma hatası:', err)
     useToast().add({
@@ -119,6 +139,7 @@ onMounted(async () => {
   await createReport(activeBarcode.value?.barcode)
   await loadDisplayImages()
   await startTighteningProcess()
+
 })
 
 const activePLCData = computed(() => {
@@ -195,10 +216,10 @@ watch(plcData, (value: any) => {
   // Plc_Islemi_Bitti bayrağını da gönderir.
   console.log(screwData.NoktaIndex, screwData.ToplamIndex);
 
- /* if (screwData.NoktaIndex === screwData.ToplamIndex && !processCompleted.value) {
-    processCompleted.value = true
-    emit('complateProcess', true)
-  }*/
+  /* if (screwData.NoktaIndex === screwData.ToplamIndex && !processCompleted.value) {
+     processCompleted.value = true
+     emit('complateProcess', true)
+   }*/
 }, { deep: true, immediate: true })
 
 // Plc_İşlemi_Bitti bayrağını dinle ve bir sonraki aşamaya geç
