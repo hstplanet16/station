@@ -70,7 +70,10 @@ const xTicks = (i: number) => {
   return formatDate(data.value[i].date)
 }
 
-const template = (d: DataRecord) => `${formatDate(d.date)}: ${formatNumber(d.amount)} parça`
+const template = (d: DataRecord | undefined) => {
+  if (!d) return ''
+  return `${formatDate(d.date)}: ${formatNumber(d.amount)} parça`
+}
 </script>
 
 <template>

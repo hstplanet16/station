@@ -99,6 +99,19 @@ const timmer = ref(0)
 const isPlcSliderOpen = ref(false)
 const writtenPlcValues = ref<any>({})
 
+// Timer'ı localStorage'dan yükle veya sıfırdan başlat
+onMounted(() => {
+  const savedTimer = localStorage.getItem(`process-timer-${route.params.vin}`)
+  if (savedTimer) {
+    timmer.value = parseInt(savedTimer, 10)
+  }
+})
+
+// Timer'ı localStorage'a kaydet
+watch(timmer, (newValue) => {
+  localStorage.setItem(`process-timer-${route.params.vin}`, newValue.toString())
+})
+
 const vinData = computed(() => useAppCookie(`vin-data-${route.params.vin}`).value)
 
 const timerColor = computed(() => {
@@ -164,6 +177,8 @@ const showVinMismatch = computed(() => {
 })
 
 const endWork = () => {
+  // Timer'ı temizle
+  localStorage.removeItem(`process-timer-${route.params.vin}`)
   navigateTo("/barcode")
 }
 
@@ -175,6 +190,8 @@ async function advanceToNextProcess() {
       if (nextStep) {
         navigateTo(`/${route.params.vin}/${nextStep.processNumber}?typeCode=${route.query.typeCode}`)
       } else {
+        // Tüm proses tamamlandı, timer'ı temizle
+        localStorage.removeItem(`process-timer-${route.params.vin}`)
         await updateProcessReport(route.params.vin as string)
         navigateTo("/barcode")
       }

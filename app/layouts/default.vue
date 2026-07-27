@@ -87,6 +87,11 @@ const links = computed(() => [[
     icon: 'i-lucide-users',
     to: '/types',
   },
+  {
+    label: 'Vardiyalar',
+    icon: 'i-lucide-clock',
+    to: '/shifts',
+  },
 ]] satisfies NavigationMenuItem[][])
 
 const groups = computed(() => [{
@@ -139,5 +144,6 @@ onMounted(async () => {
     <slot />
 
     <NotificationsSlideover />
+    <ShiftWarning />
   </UDashboardGroup>
 </template>

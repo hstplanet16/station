@@ -42,6 +42,7 @@ const selectStationID = ref(undefined)
 const state = reactive({
   name: "",
   stationUid: "",
+  workcenter: "",
   description: "",
   tagTime: 180,
   difficultyLevel: 2,
@@ -52,6 +53,7 @@ const state = reactive({
 const schema = z.object({
   name: z.string().min(2, 'En az 2 karakter olmalıdır.'),
   stationUid: z.string().min(2, 'En az 2 karakter olmalıdır.'),
+  workcenter: z.string().min(1, 'WorkCenter seçmelisiniz.'),
   tagTime: z.number(),
   difficultyLevel: z.number().optional(),
   description: z.string().min(15, 'En az 15 karakter olmalıdır.'),
@@ -75,6 +77,7 @@ function getCreatePayload() {
   return {
     name: state.name,
     stationUid: state.stationUid,
+    workcenter: state.workcenter,
     description: state.description,
     tagTime: state.tagTime,
     difficultyLevel: state.difficultyLevel,
@@ -239,13 +242,15 @@ const backStep = () => {
           </template>
           <template #new>
             <UForm ref="form" class="space-y-4" :state="state" :schema="schema">
-              <div class="grid grid-cols-2 gap-x-8">
+              <div class="grid grid-cols-3 gap-x-4">
                 <UFormField name="name" label="İstasyon Adı" description="Yeni istasyonunuzun görünen adını girin.">
                   <UInput v-model="state.name" class="w-full" />
                 </UFormField>
-                <UFormField name="stationUid" label="İstasyon UID"
-                  description="Yeni istasyonunuzun sistemlerde tanımlanacak UID bilgisini girin.">
+                <UFormField name="stationUid" label="İstasyon UID" description="Tanımlanacak UID bilgisini girin.">
                   <UInput v-model="state.stationUid" class="w-full" />
+                </UFormField>
+                <UFormField name="workcenter" label="WorkCenter" description="İstasyonun bağlı olduğu WorkCenter'ı seçin.">
+                  <USelect v-model="state.workcenter" :items="['M100', 'M101']" class="w-full" />
                 </UFormField>
               </div>
               <UFormField name="description" label="Açıklama"

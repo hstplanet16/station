@@ -19,6 +19,23 @@ const remove = async () => {
   }
 }
 
+const disableStation = () => {
+  try {
+    localStorage.removeItem('next-station-uid')
+    localStorage.removeItem('next-station')
+    toast.add({ 
+      color: "warning", 
+      title: "İstasyon Devre Dışı", 
+      description: "İstasyon devre dışı bırakıldı. Sayfa yenilenecek." 
+    })
+    setTimeout(() => {
+      window.location.reload()
+    }, 1000)
+  } catch (error) {
+    toast.add({ color: "error", title: "Hata", description: "İstasyon devre dışı bırakılamadı." })
+  }
+}
+
 const syncAllData = async () => {
   try {
     isSyncing.value = true
@@ -111,17 +128,30 @@ const syncAllData = async () => {
     description="Bu istasyonu sistemden kaldırabilirsiniz. Ancak istasyon silindiğinde tanımlı bilgilerinde silineceğini ve geri alınamayacağını unutmayın."
     class="bg-linear-to-tl from-error/10 from-5% to-default">
     <template #footer>
-      <UModal title="Uyarı" description="Bu istasyonu kaldırmak istediğinize emin misiniz.">
-        <UButton label="İstasyonu Kaldır" color="error" />
-        <template #body>
-          <div class="space-y-4">
-            <p>İstasyonu kaldırdığınızda bu işlem geri alınamaz. Devam etmek istediğinize emin misiniz?</p>
-            <div class="flex justify-end">
-              <UButton label="İstasyonu Kaldır" color="error" @click="remove" loading-auto />
+      <div class="flex gap-2">
+        <UModal title="Uyarı" description="Bu istasyonu kaldırmak istediğinize emin misiniz.">
+          <UButton label="İstasyonu Kaldır" color="error" />
+          <template #body>
+            <div class="space-y-4">
+              <p>İstasyonu kaldırdığınızda bu işlem geri alınamaz. Devam etmek istediğinize emin misiniz?</p>
+              <div class="flex justify-end">
+                <UButton label="İstasyonu Kaldır" color="error" @click="remove" loading-auto />
+              </div>
             </div>
-          </div>
-        </template>
-      </UModal>
+          </template>
+        </UModal>
+        <UModal title="Uyarı" description="İstasyonu devre dışı bırakmak istediğinize emin misiniz?">
+          <UButton label="Devre Dışı Bırak" color="warning" />
+          <template #body>
+            <div class="space-y-4">
+              <p>İstasyonu devre dışı bıraktığınızda localStorage'daki istasyon bilgileri silinecek. Devam etmek istediğinize emin misiniz?</p>
+              <div class="flex justify-end">
+                <UButton label="Devre Dışı Bırak" color="warning" @click="disableStation" />
+              </div>
+            </div>
+          </template>
+        </UModal>
+      </div>
     </template>
   </UPageCard>
 

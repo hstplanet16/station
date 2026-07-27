@@ -59,16 +59,22 @@ const timerColor = computed(() => {
 let intervalId: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
+  // Timer'ı localStorage'dan yükle veya sıfırdan başlat
+  const savedTimer = localStorage.getItem(`process-timer-${props.productVin}`)
+  if (savedTimer) {
+    timmer.value = parseInt(savedTimer, 10)
+  }
+  
   intervalId = setInterval(() => { timmer.value++ }, 1000)
+})
+
+// Timer'ı localStorage'a kaydet
+watch(timmer, (newValue) => {
+  localStorage.setItem(`process-timer-${props.productVin}`, newValue.toString())
 })
 
 onBeforeUnmount(() => {
   if (intervalId) clearInterval(intervalId)
-})
-
-watch(() => props.process.id, () => {
-  scanInput.value = ''
-  timmer.value = 0
 })
 </script>
 
