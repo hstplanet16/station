@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { useStationStore } from '~/store/Station'
 
-
 const reportData = ref<any>(undefined)
-
+const selectedStation = ref<any>(null)
 
 const baseStats = [{
   title: 'Toplam Üretim',
@@ -28,10 +27,10 @@ const baseStats = [{
 }]
 
 const stats = computed(() => {
+  if (!selectedStation.value || !reportData.value) {
+    return []
+  }
   return baseStats.map((stat) => {
-    if (!reportData.value) {
-      return {}
-    }
     return {
       title: stat.title,
       icon: stat.icon,
@@ -41,24 +40,33 @@ const stats = computed(() => {
   })
 })
 
-
-
 onMounted(async () => {
+  // LocalStorage'dan seçili istasyonu kontrol et
+  const savedStation = localStorage.getItem('selected-station')
+  if (!savedStation) {
+    return
+  }
+  
+  try {
+    selectedStation.value = JSON.parse(savedStation)
+  } catch (error) {
+    console.error('İstasyon verisi parse edilemedi:', error)
+    return
+  }
+  
   const date = new Date().toISOString()
   const stationStore = useStationStore()
   try {
     const { data } = await useAxios().post("Report/dailyReport", {
       date,
-      stationId: stationStore.getStation.id
+      stationId: selectedStation.value.id
     })
     reportData.value = data
     localStorage.setItem("next-station-report", JSON.stringify(data))
-
   } catch (error) {
-
+    console.error('Rapor verisi çekilemedi:', error)
   }
 })
-
 </script>
 
 <template>

@@ -3,8 +3,10 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 import { useAuth } from '~/composables/Auth/Auth';
 import { useUser } from '~/composables/User/User';
 
-defineProps<{
+const props = defineProps<{
   collapsed?: boolean
+  showProfile?: boolean
+  showExtraItems?: boolean
 }>()
 
 const plcTest = ref(false)
@@ -53,8 +55,8 @@ const user = computed(() => {
 
 const items = computed<DropdownMenuItem[][]>(() => {
   const isAdmin = user.value.systemAdmin
-
-
+  const showProfile = props.showProfile !== false // default true
+  const showExtraItems = props.showExtraItems !== false // default true
 
   const result: DropdownMenuItem[][] = [
     [
@@ -63,15 +65,18 @@ const items = computed<DropdownMenuItem[][]>(() => {
         label: user.value.name,
         avatar: user.value.avatar
       }
-    ],
-    [
+    ]
+  ]
+
+  if (showProfile) {
+    result.push([
       {
         type: 'link',
         label: 'Kullanıcı Profili',
         icon: 'i-lucide-user'
       }
-    ]
-  ]
+    ])
+  }
 
   if (isAdmin) {
     result.push([
@@ -136,20 +141,18 @@ const items = computed<DropdownMenuItem[][]>(() => {
             }
           }
         ]
-      },
-      {
-        label: "PLC Test",
-        onSelect: () => { plcTest.value = true }
       }
     ])
+
+    if (showExtraItems) {
+      result[result.length - 1].push({
+        label: "PLC Test",
+        onSelect: () => { plcTest.value = true }
+      })
+    }
   }
 
-  result.push([
-    {
-      type: 'link',
-      label: 'Dökümantasyon',
-      icon: 'i-lucide-book-open',
-    },
+  const footerItems: DropdownMenuItem[] = [
     {
       type: 'link',
       label: 'Çıkış Yap',
@@ -161,7 +164,17 @@ const items = computed<DropdownMenuItem[][]>(() => {
         navigateTo('/auth/login')
       }
     }
-  ])
+  ]
+
+  if (showExtraItems) {
+    footerItems.unshift({
+      type: 'link',
+      label: 'Dökümantasyon',
+      icon: 'i-lucide-book-open',
+    })
+  }
+
+  result.push(footerItems)
 
   return result
 })
