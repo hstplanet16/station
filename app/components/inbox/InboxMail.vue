@@ -38,7 +38,7 @@ const screwDevices = computed(() =>
 
 const dropdownItems = computed(() => [[{
   label: props.process.pasif ? 'Aktif Yap' : 'Pasif Yap',
-  icon: props.process.pasif ? 'i-lucide-check-circle' : 'material-symbols-light:hourglass-pause-outline',
+  icon: props.process.pasif ? 'i-lucide-check-circle' : 'material-symbols:hourglass-pause-outline',
   onSelect: async () => {
     try {
       await processStore.changeActivePassive(props.process.id)
@@ -54,7 +54,7 @@ const dropdownItems = computed(() => [[{
   onSelect: () => { editOpen.value = true }
 }], [{
   label: 'İşlem Adımını Sil',
-  icon: 'material-symbols-light:delete-outline-rounded',
+  icon: 'material-symbols:delete-outline-rounded',
   onSelect: () => { removeProcess.value = true }
 }]])
 

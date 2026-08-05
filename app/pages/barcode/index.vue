@@ -10,8 +10,10 @@ definePageMeta({ layout: 'barcode' })
 
 const toast = useToast()
 const loading = ref(false)
+const selectType = ref("")
+const selectBarcode = ref("")
 
-const { writeMultiple, plcData } = usePLC()
+const { writeMultiple, plcData, writeValue } = usePLC()
 
 const { createProcessReport } = useReportService()
 
@@ -28,7 +30,7 @@ const breadcrumbItems = computed(() => {
   const items = [
     {
       label: 'Ürün Bekleniyor',
-      icon: 'line-md:uploading-loop',
+      icon: 'i-lucide-loader-circle',
       active: true
     }
   ]
@@ -51,7 +53,31 @@ const breadcrumbItems = computed(() => {
 })
 
 const onStartVIN = async (data: string) => {
+
+  if (stationStore.getStation.stationUid.includes("on_hazirlik")) {
+
+    const seri = data.substring(0, 12)
+    const type = data.substring(12, 19)
+
+    const { data: process } = await useAxios().get(`Process/getStationProcess?stationId=${stationStore.getStation.id}&typeCode=${type}`)
+    selectBarcode.value = seri
+    loading.value = true
+
+    const localType = JSON.parse(localStorage.getItem("Next-Type") || "[]") as IType[]
+
+    localStorage.setItem(`vin-data-${seri}`, JSON.stringify(process))
+
+    await createProcessReport(seri)
+
+    selectType.value = type
+    await writeMultiple({ Calisma_Izin_Talb: true })
+
+    loading.value = false
+    return
+  }
+
   const vin = data?.trim() ?? ''
+  selectBarcode.value = vin
   if (!isValidProductVin(vin)) {
     toast.add({
       title: 'Geçersiz VIN',
@@ -103,9 +129,9 @@ const onStartVIN = async (data: string) => {
 
     await createProcessReport(vin)
 
-    writeMultiple({ Calisma_Izin_Talb: true, VIN: vin, Octa_Islemi_Basla: true })
+    selectType.value = typeCode.typeCode
+    await writeMultiple({ Calisma_Izin_Talb: true })
 
-    await navigateTo(`/${encodeURIComponent(vin)}/100?typeCode=${typeCode.typeCode}`)
   } catch (error: any) {
     toast.add({
       title: 'Sorgulama hatası',
@@ -124,32 +150,65 @@ async function onSubmit(payload: FormSubmitEvent<{ barcode?: string }>) {
 
 let unsubscribeBarcode: (() => void) | null = null
 let unsubscribeCardReader: (() => void) | null = null
+let unsubscribeWorkStart: (() => void) | null = null
 
-onMounted(async () => {
+onMounted(() => {
+  if (typeof window !== 'undefined' && (window as any).electronAPI) {
+    const api = (window as any).electronAPI
 
-  await writeMultiple({ Ana_Bar_Bek: true, Octa_Islemi_Bitti: true })
-  setTimeout(async () => {
-    await writeMultiple({ Ana_Bar_Bek: true, Octa_Islemi_Bitti: true })
-  }, 3000);
-  
-  unsubscribeBarcode = (window as any).electronAPI.barcodeStream(async (barcode: string) => {
-    onStartVIN(barcode)
-  })
+    if (api.barcodeStream) {
+      unsubscribeBarcode = api.barcodeStream(async (barcode: string) => {
+        onStartVIN(barcode)
+        useToast().add({ color: "success", title: "Bilgi", description: `Barkod Yazıldı : ${barcode}` })
+        await writeMultiple({ VIN: selectBarcode.value })
+        await navigateTo(`/${encodeURIComponent(selectBarcode.value)}/100?typeCode=${selectType.value}`)
+        useToast().add({ color: "success", title: "Bilgi", description: `Çalışma izni verildi.` })
+      })
+    }
 
-  unsubscribeCardReader = (window as any).electronAPI.cardReaderStream(async (card: string) => {
-    const { logout } = useAuth()
-    logout()
-    navigateTo('/auth/login')
+    if (api.workStart) {
+      unsubscribeWorkStart = api.workStart(async (workStart: any) => {
+        console.log(workStart);
+        if (workStart.start) {
+          /*useToast().add({ color: "success", title: "Bilgi", description: `Çalışma izni verildi.` })
+          await writeMultiple({ VIN: selectBarcode.value })
+          await navigateTo(`/${encodeURIComponent(selectBarcode.value)}/100?typeCode=${selectType.value}`)*/
+          if (unsubscribeWorkStart) {
+            unsubscribeWorkStart()
+            unsubscribeWorkStart = null
+          }
+        }
+      })
+    }
+
+    if (api.cardReaderStream) {
+      unsubscribeCardReader = api.cardReaderStream(async (card: string) => {
+        const { logout } = useAuth()
+        logout()
+        navigateTo('/auth/login')
+      })
+    }
+  }
+
+  writeMultiple({ Ana_Bar_Bek: true }).catch(err => {
+    console.error("PLC Ana_Bar_Bek hatası:", err)
   })
 })
 
 onUnmounted(() => {
   if (unsubscribeBarcode) {
     unsubscribeBarcode()
+    unsubscribeBarcode = null
   }
 
   if (unsubscribeCardReader) {
     unsubscribeCardReader()
+    unsubscribeCardReader = null
+  }
+
+  if (unsubscribeWorkStart) {
+    unsubscribeWorkStart()
+    unsubscribeWorkStart = null
   }
 })
 
@@ -167,6 +226,8 @@ watch(plcData, (value: any) => {
     }
   }
 }, { deep: true, immediate: true })
+
+const isPlcSliderOpen = ref(false)
 
 </script>
 
@@ -191,6 +252,26 @@ watch(plcData, (value: any) => {
       </div>
     </UPageCard>
   </div>
+
+  <USlideover v-model:open="isPlcSliderOpen" side="right">
+    <template #body>
+      <div class="p-4">
+        <h3 class="text-lg font-semibold mb-4">PLC Verileri</h3>
+
+        <div class="mb-6">
+          <h4 class="text-sm font-medium text-gray-500 mb-2">PLC'ye Yazılan Değerler</h4>
+
+        </div>
+
+        <div>
+          <h4 class="text-sm font-medium text-gray-500 mb-2">PLC'den Okunan Değerler</h4>
+          <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 min-h-[100px]">
+            <pre class="text-xs overflow-auto">{{ plcData || 'Veri bekleniyor...' }}</pre>
+          </div>
+        </div>
+      </div>
+    </template>
+  </USlideover>
 </template>
 
 <style scoped>

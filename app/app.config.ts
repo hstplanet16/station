@@ -1,7 +1,7 @@
 export default defineAppConfig({
   baseURL: 'localhost',
   serverURL: "http://192.168.1.3:5080",
-  //serverURL: "http://192.168.1.6:5053",
+  //serverURL: "http://localhost:5053",
   ui: {
     colors: {
       primary: 'green',

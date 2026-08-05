@@ -76,7 +76,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UEmpty title="Lütfen Bekleyin" description="Bildirimler ile ilgili ayarlarınıza erişiyorum." icon="eos-icons:loading"
+  <UEmpty title="Lütfen Bekleyin" description="Bildirimler ile ilgili ayarlarınıza erişiyorum." icon="i-lucide-loader-circle"
     v-if="loading" />
   <div v-else class="space-y-4">
     <div v-for="(section, index) in sections" :key="index" class="">

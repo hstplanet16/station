@@ -122,7 +122,7 @@ onMounted(async () => {
       :ui="{ footer: 'lg:border-t lg:border-default' }">
       <template #header="{ collapsed }">
         <div class="flex items-center justify-between w-full">
-          <UUser :avatar="{ icon: 'material-icon-theme:dart-generated' }" />
+          <UUser :avatar="{ icon: 'material-symbols:bolt' }" />
           <p v-if="!collapsed">Next Solution</p>
           <ConnectionStatus v-if="!collapsed" />
         </div>

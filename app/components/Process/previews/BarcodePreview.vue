@@ -99,58 +99,60 @@ function normalizeBarcode(value: string | null | undefined): string {
 
 let unsubscribeBarcode: (() => void) | null = null
 
-onMounted(async () => {
-  await createReport(props.matchedBarcode)
-  await loadDisplayImages()
+onMounted(() => {
+  if (typeof window !== 'undefined' && (window as any).electronAPI?.barcodeStream) {
+    unsubscribeBarcode = (window as any).electronAPI.barcodeStream(async (rawBarcode: string) => {
+      // Süreç zaten tamamlandıysa veya kısa kilit süresi içindeysek yeni okumayı yok say
+      if (isCompleted.value || scanLock) return
 
-  unsubscribeBarcode = (window as any).electronAPI.barcodeStream(async (rawBarcode: string) => {
-    // Süreç zaten tamamlandıysa veya kısa kilit süresi içindeysek yeni okumayı yok say
-    if (isCompleted.value || scanLock) return
+      readerBarcode.value = rawBarcode
 
-    readerBarcode.value = rawBarcode
+      const scanned = normalizeBarcode(rawBarcode)
+      const expected = normalizeBarcode(activeBarcode.value?.barcode)
 
-    const scanned = normalizeBarcode(rawBarcode)
-    const expected = normalizeBarcode(activeBarcode.value?.barcode)
+      // Geliştirme/teşhis amaçlı log — sorunlu karakterleri görünür kılar
+      console.log('Barkod okundu (ham):', JSON.stringify(rawBarcode), '| uzunluk:', rawBarcode.length)
+      console.log('Barkod okundu (normalize):', JSON.stringify(scanned))
+      console.log('Beklenen (normalize):', JSON.stringify(expected))
 
-    // Geliştirme/teşhis amaçlı log — sorunlu karakterleri görünür kılar
-    console.log('Barkod okundu (ham):', JSON.stringify(rawBarcode), '| uzunluk:', rawBarcode.length)
-    console.log('Barkod okundu (normalize):', JSON.stringify(scanned))
-    console.log('Beklenen (normalize):', JSON.stringify(expected))
+      scanLock = true
+      setTimeout(() => { scanLock = false }, SCAN_LOCK_MS)
 
-    scanLock = true
-    setTimeout(() => { scanLock = false }, SCAN_LOCK_MS)
+      // Beklenen barkod, okunan (normalize edilmiş) verinin İÇİNDE geçiyor mu?
+      if (expected && scanned.includes(expected)) {
+        errorBarcode.value = false
+        isCompleted.value = true
 
-    // Beklenen barkod, okunan (normalize edilmiş) verinin İÇİNDE geçiyor mu?
-    // Not: expected boş olmamalı — boş string her zaman "includes" true döner, yanlış pozitifi engelliyoruz.
-    if (expected && scanned.includes(expected)) {
-      errorBarcode.value = false
-      isCompleted.value = true
-
-      try {
-        await updateReport({
-          result: 'OK',
-          barcodeData: rawBarcode,
-        })
-        emit('complateProcess', true)
-      } catch (err) {
-        console.error('Rapor güncelleme hatası:', err)
-        isCompleted.value = false // rapor kaydı başarısız olduysa tekrar denemeye izin ver
-        useToast().add({
-          title: 'Hata',
-          description: 'Barkod doğrulandı ancak rapor kaydedilemedi. Lütfen tekrar deneyin.',
-          color: 'error',
-        })
+        try {
+          await updateReport({
+            result: 'OK',
+            barcodeData: rawBarcode,
+          })
+          emit('complateProcess', true)
+        } catch (err) {
+          console.error('Rapor güncelleme hatası:', err)
+          isCompleted.value = false // rapor kaydı başarısız olduysa tekrar denemeye izin ver
+          useToast().add({
+            title: 'Hata',
+            description: 'Barkod doğrulandı ancak rapor kaydedilemedi. Lütfen tekrar deneyin.',
+            color: 'error',
+          })
+        }
+      } else {
+        useToast().add({ color: 'error', title: 'Hata', description: 'Okuttuğunuz ürün barkodu geçersiz.' })
+        errorBarcode.value = true
       }
-    } else {
-      useToast().add({ color: 'error', title: 'Hata', description: 'Okuttuğunuz ürün barkodu geçersiz.' })
-      errorBarcode.value = true
-    }
-  })
+    })
+  }
+
+  createReport(props.matchedBarcode).catch(err => console.error('Rapor oluşturma hatası:', err))
+  loadDisplayImages().catch(err => console.error('Resim yükleme hatası:', err))
 })
 
 onUnmounted(() => {
   if (unsubscribeBarcode) {
     unsubscribeBarcode()
+    unsubscribeBarcode = null
   }
 })
 </script>

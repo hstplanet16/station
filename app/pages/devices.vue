@@ -64,7 +64,7 @@ function getRowItems(row: Row<any>) {
     },
     {
       label: 'Cihaz Analizi',
-      icon: 'uis:analytics'
+      icon: 'material-symbols:analytics-outline'
     },
     {
       type: 'separator'

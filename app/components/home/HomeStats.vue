@@ -2,7 +2,6 @@
 import { useStationStore } from '~/store/Station'
 
 const reportData = ref<any>(undefined)
-const selectedStation = ref<any>(null)
 
 const baseStats = [{
   title: 'Toplam Üretim',
@@ -27,7 +26,7 @@ const baseStats = [{
 }]
 
 const stats = computed(() => {
-  if (!selectedStation.value || !reportData.value) {
+  if (!reportData.value) {
     return []
   }
   return baseStats.map((stat) => {
@@ -41,25 +40,13 @@ const stats = computed(() => {
 })
 
 onMounted(async () => {
-  // LocalStorage'dan seçili istasyonu kontrol et
-  const savedStation = localStorage.getItem('selected-station')
-  if (!savedStation) {
-    return
-  }
-  
-  try {
-    selectedStation.value = JSON.parse(savedStation)
-  } catch (error) {
-    console.error('İstasyon verisi parse edilemedi:', error)
-    return
-  }
-  
+ 
   const date = new Date().toISOString()
   const stationStore = useStationStore()
   try {
     const { data } = await useAxios().post("Report/dailyReport", {
       date,
-      stationId: selectedStation.value.id
+      stationId: stationStore.getStation.id
     })
     reportData.value = data
     localStorage.setItem("next-station-report", JSON.stringify(data))

@@ -49,28 +49,31 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
 let unsubscribeCardReader: (() => void) | null = null
 
 onMounted(() => {
-    unsubscribeCardReader = (window as any).electronAPI.cardReaderStream(async (card: string) => {
-        console.log("Card Reader : ", card);
+    if (typeof window !== 'undefined' && (window as any).electronAPI?.cardReaderStream) {
+        unsubscribeCardReader = (window as any).electronAPI.cardReaderStream(async (card: string) => {
+            console.log("Card Reader : ", card);
 
-        state.cardNumber = Array.from(card)
-        if (state.cardNumber && state.cardNumber.length >= 10) {
-            const cardNumber = state.cardNumber.join('')
+            state.cardNumber = Array.from(card)
+            if (state.cardNumber && state.cardNumber.length >= 10) {
+                const cardNumber = state.cardNumber.join('')
 
-            try {
-                const { loginWithCardNumber } = useAuth()
-                await loginWithCardNumber(cardNumber)
-                navigateTo("/barcode")
-            } catch (error) {
-                useToast().add({ color: "error", title: "Hata", description: error as string })
-                state.cardNumber = []
+                try {
+                    const { loginWithCardNumber } = useAuth()
+                    await loginWithCardNumber(cardNumber)
+                    navigateTo("/barcode")
+                } catch (error) {
+                    useToast().add({ color: "error", title: "Hata", description: error as string })
+                    state.cardNumber = []
+                }
             }
-        }
-    })
+        })
+    }
 })
 
 onUnmounted(() => {
     if (unsubscribeCardReader) {
         unsubscribeCardReader()
+        unsubscribeCardReader = null
     }
 })
 
@@ -85,7 +88,7 @@ const onShow = () => {
         <UPageCard class="w-full max-w-md">
 
             <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
-                <UEmpty icon="material-icon-theme:dart-generated" title="Next Solution"
+                <UEmpty icon="material-symbols:bolt" title="Next Solution"
                     description="Sisteme giriş yapmak için kullanıcı adınızı girin veya kartınızı okutun."
                     variant="naked" />
                 <UFormField name="username" label="Kullanıcı Adı" required>

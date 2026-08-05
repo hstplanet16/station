@@ -20,17 +20,14 @@
 
     <div class="flex min-h-0 flex-1 flex-col overflow-hidden p-4 sm:p-5" v-if="process">
 
-      <ProcessPreviewsBarcodePreview v-if="process.processType === 'barcode' && isBarcodeStepData(stepData)"
-        :key="process.id" readonly
+      <ProcessPreviewsBarcodePreview v-if="process.processType === 'barcode' && isBarcodeStepData(stepData)" readonly
         :data="stepData" :preview-barcode="matchedBarcode" :show-not-found="showNotFound"
-        :matched-barcode="matchedVinBarcode"
-        @complate-process="advanceToNextProcess" />
+        :matched-barcode="matchedVinBarcode" @complate-process="advanceToNextProcess" />
 
       <ProcessPreviewsGeneralPreview v-else-if="process.processType === 'general' && isGeneralStepData(stepData)"
-        :key="process.id" readonly :data="stepData" @complate-process="advanceToNextProcess" />
+        readonly :data="stepData" @complate-process="advanceToNextProcess" />
 
-      <ProcessPreviewsScrewPreview v-else-if="process.processType === 'screw' && isScrewStepData(stepData)"
-        :key="process.id" readonly
+      <ProcessPreviewsScrewPreview v-else-if="process.processType === 'screw' && isScrewStepData(stepData)" readonly
         :data="stepData" :preview-barcode="matchedBarcode" :show-not-found="showNotFound"
         @complate-process="advanceToNextProcess" />
 
@@ -72,8 +69,6 @@ import {
   isBarcodeStepData,
   isGeneralStepData,
   isScrewStepData,
-  isServerStepData,
-  processTypeLabel,
   findBarcodeIndexByScan
 } from '~/utils/processData'
 
@@ -176,9 +171,10 @@ const showVinMismatch = computed(() => {
   return matchedVinBarcode.value === null
 })
 
-const endWork = () => {
+const endWork = async () => {
   // Timer'ı temizle
   localStorage.removeItem(`process-timer-${route.params.vin}`)
+  await originalWriteMultiple({ Octa_Islemi_Bitti: true })
   navigateTo("/barcode")
 }
 
@@ -188,11 +184,13 @@ async function advanceToNextProcess() {
     if (index > -1) {
       const nextStep = processStore.getProcess.processes[index + 1]
       if (nextStep) {
+        await originalWriteMultiple({ Sayfa_No: nextStep.processNumber })
         navigateTo(`/${route.params.vin}/${nextStep.processNumber}?typeCode=${route.query.typeCode}`)
       } else {
         // Tüm proses tamamlandı, timer'ı temizle
         localStorage.removeItem(`process-timer-${route.params.vin}`)
         await updateProcessReport(route.params.vin as string)
+        await originalWriteMultiple({ Octa_Islemi_Bitti: true })
         navigateTo("/barcode")
       }
     }
@@ -201,7 +199,9 @@ async function advanceToNextProcess() {
 
 let intervalId: ReturnType<typeof setInterval> | null = null
 
-onMounted(() => {
+onMounted(async () => {
+  await originalWriteValue("Octa_Islemi_Basla", true)
+  await originalWriteValue("Sayfa_No", 100)
   intervalId = setInterval(() => {
     timmer.value++
     if (timmer.value == station.getStation.tagTime) {
@@ -212,6 +212,13 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (intervalId) clearInterval(intervalId)
+})
+
+
+watch(plcData, (value) => {
+  if (value && value["Adim_Atla"] == true) {
+    advanceToNextProcess()
+  }
 })
 
 </script>

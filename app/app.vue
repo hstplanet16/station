@@ -99,16 +99,20 @@ onMounted(async () => {
     sendConfigToElectron(storedStation)
   }
 
-  await connectDevices()
-  
-  unsubscribeTCP = (window as any).electronAPI.onTCPData(async (data: string) => {
-    stationStore.setPreVIN(data)
-  })
+  if ((window as any).electronAPI.onTCPData) {
+    unsubscribeTCP = (window as any).electronAPI.onTCPData(async (data: string) => {
+      stationStore.setPreVIN(data)
+    })
+  }
 
+  await connectDevices()
 })
 
 onUnmounted(() => {
-  if (unsubscribeTCP) unsubscribeTCP()
+  if (unsubscribeTCP) {
+    unsubscribeTCP()
+    unsubscribeTCP = null
+  }
 })
 
 </script>

@@ -104,7 +104,7 @@ const items = computed<DropdownMenuItem[][]>(() => {
       {
         type: 'link',
         label: 'Dev Tool',
-        icon: 'fluent:window-dev-tools-16-regular',
+        icon: 'material-symbols:developer-mode',
         onSelect: (e: Event) => {
           (window as any).electronAPI.toggleDevTools()
         }
@@ -112,7 +112,7 @@ const items = computed<DropdownMenuItem[][]>(() => {
       {
         type: 'link',
         label: 'Barkod Ekranı',
-        icon: 'iconoir:scan-barcode',
+        icon: 'i-lucide-scan-barcode',
         onSelect: (e: Event) => {
           navigateTo('/barcode')
         }
@@ -144,7 +144,7 @@ const items = computed<DropdownMenuItem[][]>(() => {
       }
     ])
 
-    if (showExtraItems) {
+    if (false) {
       result[result.length - 1].push({
         label: "PLC Test",
         onSelect: () => { plcTest.value = true }

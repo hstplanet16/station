@@ -218,7 +218,7 @@ const backStep = () => {
     <UPageCard class="w-full max-w-5xl" :ui="{ body: 'w-full', footer: 'w-full' }">
 
       <template #body>
-        <UEmpty icon="material-icon-theme:dart-generated" title="Next Solution"
+        <UEmpty icon="material-symbols:bolt" title="Next Solution"
           description="Sisteminizi yapılandıralım. Adımları takip edin. Sadece bir kaç saniye sürecek." variant="naked"
           :ui="{ root: 'sm:p-2', header: 'max-w-xl' }" />
         <UAlert v-if="isOfflineSetup" color="warning" variant="subtle" title="Çevrimdışı mod"

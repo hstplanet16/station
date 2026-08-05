@@ -165,7 +165,7 @@ onMounted(async () => {
           <UPageGrid>
             <UPageCard title="Barkod Okuyucu" description="İstasyonunuz bir barkod okuyucu ekleyin." spotlight
               spotlight-color="success" class="cursor-pointer"
-              @click="selectDeviceType('Barcode', 'RS232', 'material-symbols-light:barcode-reader-outline-sharp')" />
+              @click="selectDeviceType('Barcode', 'RS232', 'material-symbols:barcode-reader-outline-sharp')" />
             <UPageCard title="Sıkıcı" description="İstasyonunuz bir sıkıcı ekleyin." spotlight spotlight-color="error"
               class="cursor-pointer" @click="selectDeviceType('BoringDevice', 'PLC', 'ph:screwdriver')" />
             <UPageCard title="Kamera" description="İstasyonunuz bir kamera ekleyin." spotlight spotlight-color="info"
@@ -175,7 +175,7 @@ onMounted(async () => {
               spotlight-color="secondary" class="cursor-pointer"
               @click="selectDeviceType('CardReader', 'PC', 'material-symbols:keyboard-alt-outline-sharp')" />
             <UPageCard title="PLC" description="İstasyonunuz bir plc ekleyin." spotlight spotlight-color="warning"
-              class="cursor-pointer" @click="selectDeviceType('PLC', 'PLC', 'ix:plc-device')" />
+              class="cursor-pointer" @click="selectDeviceType('PLC', 'PLC', 'material-symbols:device-hub-outline')" />
           </UPageGrid>
         </template>
         <template #deviceInformation>
